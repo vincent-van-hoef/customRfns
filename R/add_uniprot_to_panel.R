@@ -1,4 +1,4 @@
-globalVariables(c("UniProt", "Marker", "marker_id"))
+globalVariables(c("uniprot_id", "UniProt", "Marker", "marker_id"))
 
 #' Add UniProt IDs to panel
 #'
@@ -8,11 +8,12 @@ globalVariables(c("UniProt", "Marker", "marker_id"))
 add_uniprot_to_panel <- function(panel_path) {
     # Split input panel file into header and marker data
     split_panel <- list(
-        header = readr::read_csv(
-            panel_path,
-            n_max = 8,
-            col_names = FALSE,
-            show_col_types = FALSE
+        header = grep(
+            "^#",
+            readr::read_lines(
+                panel_path
+            ),
+            value = TRUE
         ),
         markers_old = readr::read_csv(
             panel_path,
@@ -38,7 +39,8 @@ add_uniprot_to_panel <- function(panel_path) {
     # - Replace NA with empty string
     split_panel$markers_with_uniprot <- split_panel$markers_old %>%
         dplyr::left_join(uniprot_master, by = c("marker_id" = "Marker")) |>
-        dplyr::relocate(UniProt, .before = "sequence_1") |>
+        dplyr::rename(uniprot_id = UniProt) |>
+        dplyr::relocate(uniprot_id, .before = "sequence_1") |>
         dplyr::mutate(across(everything(), as.character)) |>
         dplyr::mutate(across(everything(), ~ tidyr::replace_na(., "")))
 
@@ -54,7 +56,10 @@ add_uniprot_to_panel <- function(panel_path) {
         "conj_id",
         "sequence_2"
     )
-    new_cols <- setdiff(colnames(split_panel$markers_with_uniprot), "UniProt")
+    new_cols <- setdiff(
+        colnames(split_panel$markers_with_uniprot),
+        "uniprot_id"
+    )
     assertthat::are_equal(old_cols, new_cols)
 
     # Test data values match for all columns except UniProt
@@ -71,8 +76,8 @@ add_uniprot_to_panel <- function(panel_path) {
         assertthat::are_equal(
             split_panel$markers_with_uniprot |>
                 dplyr::filter(marker_id == "CD3e") |>
-                dplyr::select(UniProt) |>
-                dplyr::pull(UniProt),
+                dplyr::select(uniprot_id) |>
+                dplyr::pull(uniprot_id),
             "P07766"
         )
     ) {

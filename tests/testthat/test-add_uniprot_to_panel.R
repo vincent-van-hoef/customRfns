@@ -37,7 +37,7 @@ test_that("Expected column names are present", {
       "nuclear",
       "full_name",
       "alt_id",
-      "UniProt",
+      "uniprot_id",
       "sequence_1",
       "conj_id",
       "sequence_2"
