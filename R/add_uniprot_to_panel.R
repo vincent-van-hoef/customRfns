@@ -44,46 +44,6 @@ add_uniprot_to_panel <- function(panel_path) {
         dplyr::mutate(across(everything(), as.character)) |>
         dplyr::mutate(across(everything(), ~ tidyr::replace_na(., "")))
 
-    # Test that old and new data are identical except for UniProt column
-    # Get column names excluding UniProt
-    old_cols <- c(
-        "marker_id",
-        "control",
-        "nuclear",
-        "full_name",
-        "alt_id",
-        "sequence_1",
-        "conj_id",
-        "sequence_2"
-    )
-    new_cols <- setdiff(
-        colnames(split_panel$markers_with_uniprot),
-        "uniprot_id"
-    )
-    assertthat::are_equal(old_cols, new_cols)
-
-    # Test data values match for all columns except UniProt
-    for (col in old_cols) {
-        assertthat::are_equal(
-            split_panel$markers_old[[col]],
-            split_panel$markers_with_uniprot[[col]]
-        )
-        message("Data check passed: Values match for column '", col, "'")
-    }
-
-    # Test that CD3e has expected UniProt ID as quality check
-    if (
-        assertthat::are_equal(
-            split_panel$markers_with_uniprot |>
-                dplyr::filter(marker_id == "CD3e") |>
-                dplyr::select(uniprot_id) |>
-                dplyr::pull(uniprot_id),
-            "P07766"
-        )
-    ) {
-        message("Data check passed: CD3e has expected UniProt ID P07766")
-    }
-
     # Write output file:
     # 1. Create output filename by adding _uniprot suffix
     # 2. Write header

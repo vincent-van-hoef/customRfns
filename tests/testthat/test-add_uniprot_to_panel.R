@@ -64,3 +64,20 @@ test_that("Expected column names are present", {
     )
   )
 })
+
+test_that("CD3e has expected UniProt ID", {
+  expect_equal(
+    readr::read_csv(
+      system.file(
+        "extdata",
+        "proxiome-immuno-155_uniprot.csv",
+        package = "customRfns"
+      ),
+      comment = "#"
+    ) |>
+      dplyr::filter(marker_id == "CD3e") |>
+      dplyr::select(uniprot_id) |>
+      dplyr::pull(uniprot_id),
+    "P07766"
+  )
+})
